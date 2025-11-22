@@ -2,9 +2,9 @@
 
 ## Requirements
 
- chmod +x create_venv.sh
- ./create_venv.sh
- source venv/bin/activate
+ chmod +x create_venv.sh      
+ ./create_venv.sh   
+ source venv/bin/activate     
 
 # Samples
 

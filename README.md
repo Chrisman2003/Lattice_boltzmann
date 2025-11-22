@@ -2,7 +2,9 @@
 
 ## Requirements
 
- The requirements.txt does not specify any specific versions for any packages.
+ chmod +x create_venv.sh
+ ./create_venv.sh
+ source venv/bin/activate
 
 # Samples
 

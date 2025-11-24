@@ -1,6 +1,6 @@
 import pytest
 from pytest import approx
-import numpy as np
+import cupy as cp
 from lbm.constants import cs
 from lbm.stencil import Stencil
 from lbm.lattice import Lattice
@@ -52,7 +52,7 @@ def test_density(d, q):
     lattice.density()
 
     idx = tuple([ni // 2 for ni in n])  # Find some cell in the middle
-    assert lattice.rho[idx] == approx(np.sum(f0[idx]))
+    assert lattice.rho[idx] == approx(cp.sum(f0[idx]))
 
 
 @pytest.mark.parametrize("d,q", [(2, 9), (3, 19)])
@@ -66,8 +66,8 @@ def test_velocity(d, q):
     lattice.density()
     lattice.velocity()
     idx = tuple([ni // 2 for ni in n])  # Find some cell in the middle
-    density = np.sum(f0[idx])
-    velocity = np.zeros(d)
+    density = cp.sum(f0[idx])
+    velocity = cp.zeros(d)
     for iq, c_i in zip(range(stencil.q), stencil.c):
         velocity += c_i * f0[idx + (iq,)]
     velocity /= density
@@ -88,7 +88,7 @@ def test_equilibrium(d, q):
     u = lattice.u[idx]
     rho = lattice.rho[idx]
     for iq, c_i, w_i in zip(range(stencil.q), stencil.c, stencil.w):
-        feq_i = w_i * rho * (1 + np.dot(u, c_i)/cs**2 + 0.5 * np.dot(u, c_i)**2/cs**4 - 0.5 * np.dot(u, u)/cs**2)
+        feq_i = w_i * rho * (1 + cp.dot(u, c_i)/cs**2 + 0.5 * cp.dot(u, c_i)**2/cs**4 - 0.5 * cp.dot(u, u)/cs**2)
         assert feq[idx + (iq,)] == approx(feq_i)
 
 

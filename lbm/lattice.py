@@ -29,26 +29,19 @@ class Lattice:
                         print(f"[{i}, {j}, {k}] {ff}")
 
     def streaming(self):
-        # 修正 1：axis 必须是 Python 的整数 tuple，不能用 cp.arange
-        # 这里的 axis 对应空间维度 (例如 2D 就是 (0, 1))
+
         spatial_axes = tuple(range(self.stencil.d))
 
-        # 遍历所有离散方向 q
         for iq in range(self.stencil.q):
-            # 修正 2：shift (位移量) 必须是 Python 的 int tuple
-            # 我们优先尝试使用 c_cpu (如果你更新了 Stencil 类)
-            # 如果没有 c_cpu，则从 GPU 取回 (.get())
+
             if hasattr(self.stencil, 'c_cpu') and self.stencil.c_cpu is not None:
                 vec = self.stencil.c_cpu[iq]
             else:
-                # 慢速回退方案：如果 Stencil 类没更新，从 GPU 拷贝回 CPU
+
                 vec = self.stencil.c[iq].get()
 
-            # 确保转为 Python int tuple
             shift = tuple(map(int, vec))
 
-            # 这里的 self.f 是 GPU 数组，cp.roll 在 GPU 上执行
-            # 但 shift 和 axis 参数必须是 CPU 上的整数
             self.f[..., iq] = cp.roll(self.f[..., iq], shift, axis=spatial_axes)
 
     def density(self):

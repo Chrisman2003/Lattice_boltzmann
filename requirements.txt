@@ -2,3 +2,4 @@ numpy
 numba
 scipy
 pytest
+#module load CuPy/13.6.0

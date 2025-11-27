@@ -1,11 +1,11 @@
 import sys
 import time
-import cupy as cp
+import numpy as np
 from lbm.stencil import Stencil
 from lbm.lattice import Lattice
 from lbm.constants import cs
 from lbm.exporter import Exporter
-
+import cupy as cp
 
 def main():
     d = 2
@@ -17,11 +17,11 @@ def main():
     b = 0.5
     Re = 100
     gamma = 1.4
-    L = b * cp.sqrt(cp.log(2))
+    L = b * np.sqrt(np.log(2))
     rho0 = 1.0
     u0 = Ma * cs
-    u_dir = cp.array([1.0, 0.0])
-    u_dir /= cp.linalg.norm(u_dir)
+    u_dir = np.array([1.0, 0.0])
+    u_dir /= np.linalg.norm(u_dir)
     u = u0 * u_dir[0]
     v = u0 * u_dir[1]
     sos = 340.2940
@@ -45,7 +45,7 @@ def main():
     stencil = Stencil(d, q)
     lattice = Lattice((nx, ny), stencil)
     # Initial data
-    x, y = cp.meshgrid(cp.arange(nx), cp.arange(ny), indexing="ij")
+    x, y = np.meshgrid(range(nx), range(ny), indexing="ij")
     x = x / 20
     y = y / 20
     x0 = (nx - 1) / 2 / 20
@@ -53,20 +53,20 @@ def main():
     print(x0, y0, u0)
     r2 = (x - x0) ** 2 + (y - y0) ** 2
     #
-    lattice.u[:, :, 0] = u + u0 * 2 / cp.pi * cp.exp(0.5 * (1 - r2 / b ** 2)) * (y - y0) / b
-    lattice.u[:, :, 1] = v - u0 * 2 / cp.pi * cp.exp(0.5 * (1 - r2 / b ** 2)) * (x - x0) / b
-    alpha = (2 / cp.pi * Ma) ** 2 * cp.exp(1 - r2 / b ** 2)
-    lattice.rho[:] = rho0 * (1 - (gamma - 1) / 2 * alpha) ** (1 / (gamma - 1))
+    lattice.u[:, :, 0] = cp.asarray(u + u0*2/np.pi * np.exp(0.5 * (1 - r2/b**2)) * (y - y0)/b)
+    lattice.u[:, :, 1] = cp.asarray(v - u0*2/np.pi * np.exp(0.5 * (1 - r2/b**2)) * (x - x0)/b)
+    alpha = (2 / np.pi * Ma) ** 2 * np.exp(1 - r2 / b ** 2)
+    lattice.rho[:] = cp.asarray(rho0 * (1 - (gamma - 1)/2 * alpha)**(1/(gamma - 1)))
 
     # eps = 5.0
-    # lattice.u[:, :, 0] = u0 * (1 - eps/(2*cp.pi) * cp.exp(0.5*(1 - r2))) * (y - y0)
-    # lattice.u[:, :, 1] = u0 * (1 + eps/(2*cp.pi) * cp.exp(0.5*(1 - r2))) * (x - x0)
-    # lattice.rho[:] = rho0 * (1 - (gamma - 1) * eps**2/(8 * cp.pi**2) * cp.exp(1 - r2))**(1/(gamma - 1))
+    # lattice.u[:, :, 0] = u0 * (1 - eps/(2*np.pi) * np.exp(0.5*(1 - r2))) * (y - y0)
+    # lattice.u[:, :, 1] = u0 * (1 + eps/(2*np.pi) * np.exp(0.5*(1 - r2))) * (x - x0)
+    # lattice.rho[:] = rho0 * (1 - (gamma - 1) * eps**2/(8 * np.pi**2) * np.exp(1 - r2))**(1/(gamma - 1))
 
     # K = 0.125
-    # lattice.u[:, :, 0] = u0 - K/(2*cp.pi) * cp.exp(0.5*(1 - r2)) * (y - y0)
-    # lattice.u[:, :, 1] = u0 + K/(2*cp.pi) * cp.exp(0.5*(1 - r2)) * (x - x0)
-    # lattice.rho[:] = rho0 * (1 + K**2*(gamma - 1)/(8 * cs**2 * cp.pi**2) * cp.exp(1 - r2))**(1/(gamma - 1))
+    # lattice.u[:, :, 0] = u0 - K/(2*np.pi) * np.exp(0.5*(1 - r2)) * (y - y0)
+    # lattice.u[:, :, 1] = u0 + K/(2*np.pi) * np.exp(0.5*(1 - r2)) * (x - x0)
+    # lattice.rho[:] = rho0 * (1 + K**2*(gamma - 1)/(8 * cs**2 * np.pi**2) * np.exp(1 - r2))**(1/(gamma - 1))
     # tau = 0.54
     # omega = 1/tau
     #
@@ -81,16 +81,16 @@ def main():
     exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})
 
     t0 = time.perf_counter()
-    for it in cp.arange(max_it):
+    for it in range(max_it):
         lattice.collision(omega)
         lattice.streaming()
-        if cp.mod(it + 1, mod_it) == 0:
-            total_mass = cp.sum(lattice.f.flatten())
+        if np.mod(it + 1, mod_it) == 0:
+            total_mass = float(lattice.f.sum())
             print(f"Total mass: {total_mass}")
             filename = f"iv-{it + 1}.vtk"
             exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})
             print(f"Time: {time.perf_counter() - t0}")
-            if cp.isnan(total_mass):
+            if np.isnan(total_mass):
                 break
     print(f"Time: {time.perf_counter() - t0}")
 

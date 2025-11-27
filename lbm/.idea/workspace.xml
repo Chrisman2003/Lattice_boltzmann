@@ -5,12 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="be94d6fd-29f1-48d7-84c8-e1f9332687e6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/exporter.py" beforeDir="false" afterPath="$PROJECT_DIR$/exporter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lattice.py" beforeDir="false" afterPath="$PROJECT_DIR$/lattice.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stencil.py" beforeDir="false" afterPath="$PROJECT_DIR$/stencil.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../samples/isentropic_vortex.py" beforeDir="false" afterPath="$PROJECT_DIR$/../samples/isentropic_vortex.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../samples/taylor_green_vortex.py" beforeDir="false" afterPath="$PROJECT_DIR$/../samples/taylor_green_vortex.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,13 +26,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;cupy&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/cephyr/users/jingyang/Vera/workspace/Lattice_boltzmann/samples/taylor_green_vortex.py&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "numba",
+    "last_opened_file_path": "/cephyr/users/jingyang/Vera/workspace/Lattice_boltzmann/samples/isentropic_vortex.py"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

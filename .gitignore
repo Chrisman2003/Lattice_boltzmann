@@ -2,3 +2,4 @@ lbm.egg-info/
 setup.py
 venv/
 samples/results/
+lbm/__pycache__/

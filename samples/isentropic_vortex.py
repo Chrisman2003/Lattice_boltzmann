@@ -1,4 +1,5 @@
 import sys
+sys.path.append("/cephyr/users/jingyang/Vera/workspace/Lattice_boltzmann")
 import time
 import numpy as np
 from lbm.stencil import Stencil

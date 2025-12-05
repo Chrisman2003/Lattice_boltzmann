@@ -11,8 +11,8 @@ import cupy as cp
 def main():
     d = 2
     q = 9
-    nx = 400
-    ny = 400
+    nx = 1000
+    ny = 1000
     Ma = 0.05 / cs  # 0.0866
     # Ma = 0.4
     b = 0.5
@@ -34,6 +34,7 @@ def main():
     tau = nu / cs ** 2 + 0.5
     tau = 0.52
     omega = 1.0 / tau
+    first_hit_time = None
 
     print(f"Mach        = {Ma}")
     print(f"L           = {L}")
@@ -76,7 +77,7 @@ def main():
     mod_it = 50
     max_it = 500
     print(f"max it {max_it} \t mod it {mod_it}")
-
+    print(max_it/mod_it)
     exporter = Exporter((nx, nx))
     filename = f"iv-{0}.vtk"
     exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})
@@ -85,6 +86,10 @@ def main():
     for it in range(max_it):
         lattice.collision(omega)
         lattice.streaming()
+        if first_hit_time is None:
+            	first_hit_time =time.perf_counter()-t0
+            	est_total = first_hit_time*(max_it // mod_it)
+            	print(f"Estimated total runtime: {est_total:.2f} seconds")
         if np.mod(it + 1, mod_it) == 0:
             total_mass = float(lattice.f.sum())
             print(f"Total mass: {total_mass}")

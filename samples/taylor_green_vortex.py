@@ -23,7 +23,7 @@ def main():
     t_c = L/v0
     tau = nu/cs**2 + 0.5
     omega = 1.0/tau
-
+    first_hit_time = None
     print(f"Mach        = {Ma}")
     print(f"Re          = {Re}")
     print(f"v0          = {v0}")
@@ -49,15 +49,19 @@ def main():
     mod_it = int(t_c/2)
     max_it = 2*20*mod_it
     print(f"max it {max_it} \t mod it {mod_it}")
-
+    print(max_it/mod_it)
     exporter = Exporter((n, n, n))
     filename = f"tgv-{0}.vtk"
     exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})
     t0 = time.perf_counter()
     for it in range(max_it):
-        print(it + 1)
+        #print(it + 1)
         lattice.collision(omega)
         lattice.streaming()
+        if first_hit_time is None:
+            	first_hit_time =time.perf_counter()-t0
+            	est_total = first_hit_time*(max_it // mod_it)
+            	print(f"Estimated total runtime: {est_total:.2f} seconds")
         if np.mod(it + 1, mod_it) == 0:
             filename = f"tgv-{it + 1}.vtk"
             exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})

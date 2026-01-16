@@ -77,16 +77,13 @@ $$\rho*\vec u = \sum{\vec c_i*f_i}$$
 Equilibrium function
 
 $$
-f_i^{eq} = w_i \rho \left(
-1 + \frac{\vec{u} \cdot \vec{c}_i}{c_s^2}
+f_i^{eq} = w_i \rho \left( 1 + \frac{\vec{u} \cdot \vec{c}_i}{c_s^2}
 + \frac{(\vec{u} \cdot \vec{c}_i)^2}{2 c_s^4}
-- \frac{\vec{u} \cdot \vec{u}}{2 c_s^2}
-\right)
+- \frac{\vec{u} \cdot \vec{u}}{2 c_s^2} \right)
 $$
 
 
 Discretized lattice Boltzmann equation
-
 $$f_i(\vec x+c_i*\Delta t, t + \Delta t) = f_i(\vec x,t) + \Omega_i(\vec x,t)$$
 
 Collision operator (BGK)

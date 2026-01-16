@@ -74,9 +74,16 @@ $$\rho = \sum{f_i}$$
 
 $$\rho*\vec u = \sum{\vec c_i*f_i}$$
 
-Equlibrium function
+Equilibrium function
 
-$$f_i^{eq} = w_i*\rho*(1 + \frac{\vec u * \vec c_i}{c_s^2} + \frac{(\vec u * \vec c_i)^2}{2*c_s^4} - \frac{\vec u * \vec u}{2*c_s^2})$$
+$$
+f_i^{eq} = w_i \rho \left(
+1 + \frac{\vec{u} \cdot \vec{c}_i}{c_s^2}
++ \frac{(\vec{u} \cdot \vec{c}_i)^2}{2 c_s^4}
+- \frac{\vec{u} \cdot \vec{u}}{2 c_s^2}
+\right)
+$$
+
 
 Discretized lattice Boltzmann equation
 

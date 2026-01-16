@@ -3,6 +3,12 @@ import numba as nb
 from lbm.constants import cs, inv_cs2, inv_cs4
 from lbm.stencil import Stencil
 
+"""
+Density (Zeroth Moment) = Sum of all populations.
+Momentum (First Moment) = Sum of (Population x Lattice Direction).
+Velocity (Derived Moment) =	Momentum divided by Density.
+Mass (Integral) = Sum of Density over all grid nodes.
+"""
 
 class Lattice:
     def __init__(self, n, stencil: Stencil):
@@ -48,6 +54,7 @@ class Lattice:
         self.velocity()
         self.f -= omega * (self.f - self.feq())
 
+    # Equilibrium distribution function
     def feq(self):
         idx = (slice(None),) * self.stencil.d
         feq = np.zeros_like(self.f)

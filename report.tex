@@ -1,0 +1,16 @@
+% CREATED BY MAGNUS GUSTAVER, 2020
+\chapter{Theory}
+
+% 2. Theory: Page 10 [LBM Equations + CPUvsGPU comparison]
+% --> LBM Equations
+% --> General CPU vs GPU academic comparison
+% --> Introduction of Optimization Tools used
+
+\section{The Lattice Boltzmann Approach to CFG}
+The Lattice Boltzmann Method (LBM) provides an alternative formulation of fluid dynamics that circumvents many of these challenges. 
+Instead of solving the Navier--Stokes equations directly, LBM models fluid flow through the evolution of particle distribution 
+functions on a discrete lattice. Macroscopic fluid behavior emerges naturally from local interactions and streaming processes, 
+resulting in an algorithm composed almost entirely of local, explicit operations. Thus in LBM a system of linear 
+algebraic equations is solved through a series of local updates and data movements on a fixed lattice grid.
+GPU acceleration is thus particularly effective for LBM simulations, as the method's inherent parallelism aligns well with the architecture of modern GPUs.
+\\

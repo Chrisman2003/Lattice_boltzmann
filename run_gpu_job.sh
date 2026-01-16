@@ -7,7 +7,7 @@
 #SBATCH --time=04:00:00           # wall-time (4 hours)
 #SBATCH --output=lbm_%j.out       # job output log
 
-module load cuda/xx 
+module load CUDA/12.9.1 
 source venv/bin/activate
 
-python3 samples/isentropic_vortex_gpu.py
+python3 samples/isentropic_vortex.py

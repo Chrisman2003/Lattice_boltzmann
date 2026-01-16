@@ -10,7 +10,8 @@ import time
 import numpy as np
 from numba import cuda
 from lbm.stencil import Stencil
-from lbm.lattice_kernal_2 import Lattice
+#from lbm.lattice_kernal_2 import Lattice
+from lbm.lattice import Lattice
 from lbm.constants import cs, inv_cs2, inv_cs4
 from lbm.exporter import Exporter
 

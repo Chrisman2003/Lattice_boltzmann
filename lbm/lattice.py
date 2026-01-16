@@ -4,14 +4,6 @@ from numba import cuda
 from lbm.constants import cs, inv_cs2, inv_cs4
 from lbm.stencil import Stencil
 
-@cuda.jit(device=True)
-def periodic(i, n):
-    if i < 0:
-        return i + n
-    if i >= n:
-        return i - n
-    return i
-
 class Lattice:
     def __init__(self, n, stencil: Stencil):
         self.stencil = stencil
@@ -115,46 +107,12 @@ class Lattice:
             if ktarget < 0: ktarget += nz
             elif ktarget >= nz: ktarget -= nz
             f_out[itarget, jtarget, ktarget, iq] = f_star
-            
 
-    @staticmethod
-    @cuda.jit
-    def kinetic_energy_kernel(u, rho, out):
-        i, j, k = cuda.grid(3)
-        nx, ny, nz = rho.shape
-        if i >= nx or j >= ny or k >= nz:
-            return
 
-        ux = u[i, j, k, 0]
-        uy = u[i, j, k, 1]
-        uz = u[i, j, k, 2]
-        ke = 0.5 * rho[i, j, k] * (ux*ux + uy*uy + uz*uz)
-        cuda.atomic.add(out, 0, ke)
+        
 
-    @staticmethod
-    @cuda.jit
-    def enstrophy_kernel(u, rho, out):
-        i, j, k = cuda.grid(3)
-        nx, ny, nz = rho.shape
-        if i >= nx or j >= ny or k >= nz:
-            return
 
-        ip = periodic(i + 1, nx)
-        im = periodic(i - 1, nx)
-        jp = periodic(j + 1, ny)
-        jm = periodic(j - 1, ny)
-        kp = periodic(k + 1, nz)
-        km = periodic(k - 1, nz)
 
-        dudy = (u[i, jp, k, 0] - u[i, jm, k, 0]) * 0.5
-        dudz = (u[i, j, kp, 0] - u[i, j, km, 0]) * 0.5
-        dvdx = (u[ip, j, k, 1] - u[im, j, k, 1]) * 0.5
-        dvdz = (u[i, j, kp, 1] - u[i, j, km, 1]) * 0.5
-        dwdx = (u[ip, j, k, 2] - u[im, j, k, 2]) * 0.5
-        dwdy = (u[i, jp, k, 2] - u[i, jm, k, 2]) * 0.5
 
-        wx = dwdy - dvdz
-        wy = dudz - dwdx
-        wz = dvdx - dudy
 
-        cuda.atomic.add(out, 0, 0.5 * rho[i, j, k] * (wx*wx + wy*wy + wz*wz))
+

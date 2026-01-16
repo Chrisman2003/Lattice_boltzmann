@@ -75,7 +75,6 @@ $$\rho = \sum{f_i}$$
 $$\rho*\vec u = \sum{\vec c_i*f_i}$$
 
 Equilibrium function
-
 $$
 f_i^{eq} = w_i \rho \left( 1 + \frac{\vec{u} \cdot \vec{c}_i}{c_s^2}
 + \frac{(\vec{u} \cdot \vec{c}_i)^2}{2 c_s^4}

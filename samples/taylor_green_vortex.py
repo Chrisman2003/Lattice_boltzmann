@@ -6,7 +6,7 @@ import math
 import numpy as np
 from numba import cuda
 from lbm.stencil import Stencil
-from lbm.lattice import Lattice
+from lbm.lattice_gpu_2 import Lattice
 from lbm.constants import cs, inv_cs2, inv_cs4
 from lbm.exporter import Exporter
 
@@ -14,9 +14,9 @@ from lbm.exporter import Exporter
 def main():
     d = 3
     q = 19
-    n = 128
+    n =100
     Ma = 0.1
-    Re = 1600
+    Re = 1600  #10 22 46 100 215 464
     L = n / (2 * np.pi)
     rho0 = 1.0
     p0 = rho0 * cs**2
@@ -73,7 +73,6 @@ def main():
     max_it = 2 * 20 * mod_it
     print(f"max_it = {max_it} \t mod_it = {mod_it}")
     t0 = time.perf_counter()
-    post = np.zeros((max_it + 1, 3))
 
     for it in range(max_it):
         Lattice.moments_kernel[blocks, threads](d_f, d_rho, d_u, d_c, q)
@@ -81,18 +80,6 @@ def main():
             d_f, d_f_new, d_rho, d_u, d_c, d_w, q, omega, inv_cs2, inv_cs4,n,n,n,
         )
         d_f, d_f_new = d_f_new, d_f
-
-        d_ke = cuda.to_device(np.zeros(1, np.float32))
-        d_en = cuda.to_device(np.zeros(1, np.float32))
-
-        Lattice.kinetic_energy_kernel[blocks, threads](d_u, d_rho, d_ke)
-        Lattice.enstrophy_kernel[blocks, threads](d_u, d_rho, d_en)
-
-        cuda.synchronize()
-
-        post[it, 0] = it / t_c
-        post[it, 1] = d_ke.copy_to_host()[0]
-        post[it, 2] = d_en.copy_to_host()[0]
 
         if (it + 1) % mod_it == 0:
             print(f"Iteration {it+1}")
@@ -108,7 +95,7 @@ def main():
 
             print(f"Time: {time.perf_counter() - t0}")
     print("Total time:", time.perf_counter() - t0)
-    np.savetxt("post_data.out", post, delimiter=",")
+
 
 if __name__ == "__main__":
     main()

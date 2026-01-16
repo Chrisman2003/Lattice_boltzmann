@@ -89,6 +89,9 @@ poetry.lock
 # PEP 582; used by e.g. pythonloc, pdm
 __pypackages__/
 
+# vtk files
+*.vtk
+
 # venv
 venv/
 ENV/

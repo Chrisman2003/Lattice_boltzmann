@@ -92,8 +92,8 @@ __pypackages__/
 # vtk files
 *.vtk
 
-# .out files
-*.out
+# .idea files
+.idea/
 
 # venv
 venv/

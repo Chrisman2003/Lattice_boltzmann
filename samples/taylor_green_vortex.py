@@ -1,17 +1,18 @@
 import sys
-sys.path.append("/cephyr/users/konkala/Vera/GPU_LB_3D/lbm_code_gpu")
+sys.path.append("/cephyr/users/ispas/Vera/GPU_LB_3D/lbm_code_gpu")
 
 import time
 import math
 import numpy as np
 from numba import cuda
 from lbm.stencil import Stencil
-from lbm.lattice_gpu_2 import Lattice
+from lbm.lattice import Lattice
 from lbm.constants import cs, inv_cs2, inv_cs4
 from lbm.exporter import Exporter
 
 
 def main():
+    cuda.select_device(0) # Select GPU device
     d = 3
     q = 19
     n =100

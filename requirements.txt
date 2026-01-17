@@ -2,7 +2,5 @@ numpy
 numba
 scipy
 pytest
-cupy-cuda12x==13.6.0"
-#module load CuPy/13.6.0-foss-2025a
-
-
+cupy-cuda12x
+#module load CuPy/13.6.0

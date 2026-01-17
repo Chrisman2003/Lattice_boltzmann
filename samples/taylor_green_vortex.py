@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/cephyr/users/ispas/Vera/GPU_LB_3D/lbm_code_gpu")
+sys.path.append("/cephyr/users/ispas/Vera/Lattice_boltzmann")
 
 import time
 import math
@@ -12,10 +12,9 @@ from lbm.exporter import Exporter
 
 
 def main():
-    cuda.select_device(0) # Select GPU device
     d = 3
     q = 19
-    n =100
+    n =100 # set to 129 for 7040 reference vtk file
     Ma = 0.1
     Re = 1600  #10 22 46 100 215 464
     L = n / (2 * np.pi)

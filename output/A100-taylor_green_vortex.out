@@ -1,0 +1,131 @@
+This job can be monitored from: https://job.c3se.chalmers.se/vera/7788518
+Mach        = 0.1
+Re          = 1600
+v0          = 0.05773502691896259
+Tau         = 0.5017229027981931
+omega       = 1.9931320544125686
+Q-criterion = 1.3159472534785816e-06
+t_c         = 275.66444771089596 	 20 * t_c = 5513.288954217919
+Num cells: 1000000
+max_it = 5480 	 mod_it = 137
+Iteration 137
+Total mass: 1000000.0
+Time: 0.9447155557572842
+Iteration 274
+Total mass: 1000000.0
+Time: 1.1472452906891704
+Iteration 411
+Total mass: 1000000.0
+Time: 1.3335496746003628
+Iteration 548
+Total mass: 1000000.0
+Time: 1.525600043591112
+Iteration 685
+Total mass: 1000000.0
+Time: 1.711350022815168
+Iteration 822
+Total mass: 1000000.0
+Time: 1.9030348495580256
+Iteration 959
+Total mass: 1000000.0
+Time: 2.089227307587862
+Iteration 1096
+Total mass: 1000000.0
+Time: 2.2835850128903985
+Iteration 1233
+Total mass: 1000000.0
+Time: 2.4693251927383244
+Iteration 1370
+Total mass: 1000000.0
+Time: 2.6611746759153903
+Iteration 1507
+Total mass: 1000000.0
+Time: 2.8465784937143326
+Iteration 1644
+Total mass: 1000000.0
+Time: 3.0380582166835666
+Iteration 1781
+Total mass: 1000000.0
+Time: 3.2230942398309708
+Iteration 1918
+Total mass: 1000000.0
+Time: 3.45091878157109
+Iteration 2055
+Total mass: 1000000.0
+Time: 3.668779016006738
+Iteration 2192
+Total mass: 1000000.0
+Time: 3.89448309969157
+Iteration 2329
+Total mass: 1000002.375
+Time: 4.11408975860104
+Iteration 2466
+Total mass: 1000003.5625
+Time: 4.338292103726417
+Iteration 2603
+Total mass: 1000112.375
+Time: 4.585372184868902
+Iteration 2740
+Total mass: 1002341.5
+Time: 4.813943778630346
+Iteration 2877
+Total mass: 1016791.125
+Time: 5.036203761585057
+Iteration 3014
+Total mass: 1065351.25
+Time: 5.261018754914403
+Iteration 3151
+Total mass: 1179122.75
+Time: 5.481006332673132
+Iteration 3288
+Total mass: 1420531.5
+Time: 5.707838916685432
+Iteration 3425
+Total mass: 1877175.125
+Time: 5.929145115893334
+Iteration 3562
+Total mass: 2623651.5
+Time: 6.156811402644962
+Iteration 3699
+Total mass: 3724865.5
+Time: 6.375645523890853
+Iteration 3836
+Total mass: 5285768.0
+Time: 6.599710108712316
+Iteration 3973
+Total mass: 7506773.0
+Time: 6.821653802879155
+Iteration 4110
+Total mass: 10668902.0
+Time: 7.045456536579877
+Iteration 4247
+Total mass: 15151144.0
+Time: 7.266304587945342
+Iteration 4384
+Total mass: 21495108.0
+Time: 7.489814224652946
+Iteration 4521
+Total mass: 30550888.0
+Time: 7.706952893640846
+Iteration 4658
+Total mass: 43364664.0
+Time: 7.931159210857004
+Iteration 4795
+Total mass: 61574856.0
+Time: 8.15007122978568
+Iteration 4932
+Total mass: 87457504.0
+Time: 8.375369736924767
+Iteration 5069
+Total mass: 124015232.0
+Time: 8.59382576867938
+Iteration 5206
+Total mass: 176176768.0
+Time: 8.817313449922949
+Iteration 5343
+Total mass: 249793312.0
+Time: 9.039200976956636
+Iteration 5480
+Total mass: 354486720.0
+Time: 9.26427951687947
+Total time: 9.264290064573288

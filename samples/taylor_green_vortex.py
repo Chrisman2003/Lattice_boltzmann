@@ -59,9 +59,9 @@ def main():
         lattice.collision(omega)
         lattice.streaming()
         if first_hit_time is None:
-            	first_hit_time =time.perf_counter()-t0
-            	est_total = first_hit_time*(max_it // mod_it)
-            	print(f"Estimated total runtime: {est_total:.2f} seconds")
+            first_hit_time =time.perf_counter()-t0
+            est_total = first_hit_time*(max_it // mod_it)
+            print(f"Estimated total runtime: {est_total:.2f} seconds")
         if np.mod(it + 1, mod_it) == 0:
             filename = f"tgv-{it + 1}.vtk"
             exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})

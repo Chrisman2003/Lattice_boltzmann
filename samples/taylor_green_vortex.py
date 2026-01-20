@@ -61,10 +61,10 @@ def main():
             filename = f"tgv-{it + 1}.vtk"
             exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})
             if first_hit_time is None:
-            	first_hit_time =time.perf_counter()-t0
-            	est_total = first_hit_time*(max_it // mod_it)
-            	print(f"Estimated total runtime: {est_total:.2f} seconds")
-            print(f"Time: {time.perf_counter() - t0}")
+                first_hit_time =time.perf_counter()-t0
+                est_total = first_hit_time*(max_it // mod_it)
+                print(f"Estimated total runtime: {est_total:.2f} seconds")
+                print(f"Time: {time.perf_counter() - t0}")
     print(f"Time: {time.perf_counter() - t0}")
 
 

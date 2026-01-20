@@ -1,56 +1,54 @@
 import numpy as np
 from numba import cuda
-from lbm.constants import cs, inv_cs2, inv_cs4
-from lbm.stencil import Stencil
+from mpi4py import MPI
+from lbm.constants import inv_cs2, inv_cs4
 
+class LatticeMPI:
+    def __init__(self, n_global, stencil, comm: MPI.Comm):
+        self.comm = comm
+        self.rank = comm.Get_rank()
+        self.size = comm.Get_size()
 
-class Lattice:
-    """
-    MPI + Numba-CUDA Lattice for LBM.
-    Domain decomposition is handled outside this class.
-    """
+        # One rank per GPU
+        cuda.select_device(self.rank % len(cuda.gpus))
 
-    def __init__(self, n, stencil: Stencil):
         self.stencil = stencil
-        self.n = n  # (nx, ny, nz_local_with_halo)
+        self.q = stencil.q
+        self.c = cuda.to_device(stencil.c)
+        self.w = cuda.to_device(stencil.w)
 
-        self.f = np.zeros(n + (stencil.q,), dtype=np.float32)
-        self.rho = np.ones(n, dtype=np.float32)
-        self.u = np.zeros(n + (stencil.d,), dtype=np.float32)
+        nx, ny, nz = n_global
+        assert nz % self.size == 0, "nz must be divisible by MPI size"
 
-    def init_data(self):
-        self.f = self.feq()
+        self.nz_local = nz // self.size
+        self.nx, self.ny = nx, ny
 
-    def feq(self):
-        feq = np.zeros_like(self.f)
-        uu = np.sum(self.u**2, axis=-1)
+        # +2 for halo planes
+        self.shape = (nx, ny, self.nz_local + 2)
 
-        for iq, c_i, w_i in zip(
-            range(self.stencil.q), self.stencil.c, self.stencil.w
-        ):
-            uc = (
-                self.u[..., 0] * c_i[0]
-                + self.u[..., 1] * c_i[1]
-                + self.u[..., 2] * c_i[2]
+        self.f = cuda.device_array(self.shape + (self.q,), np.float32)
+        self.f_new = cuda.device_array_like(self.f)
+        self.rho = cuda.device_array(self.shape, np.float32)
+        self.u = cuda.device_array(self.shape + (3,), np.float32)
+
+    def exchange_halos(self):
+        """Exchange halo planes along z-direction (CUDA-aware MPI)"""
+        if self.rank > 0:
+            self.comm.Sendrecv(
+                self.f[:, :, 1, :], self.rank - 1,
+                recvbuf=self.f[:, :, 0, :], source=self.rank - 1
             )
-            feq[..., iq] = w_i * self.rho * (
-                1.0
-                + inv_cs2 * uc
-                + 0.5 * inv_cs4 * uc**2
-                - 0.5 * inv_cs2 * uu
+        if self.rank < self.size - 1:
+            self.comm.Sendrecv(
+                self.f[:, :, self.nz_local, :], self.rank + 1,
+                recvbuf=self.f[:, :, self.nz_local + 1, :], source=self.rank + 1
             )
-        return feq
-
-    # ============================================================
-    # ================= CUDA KERNELS =============================
-    # ============================================================
 
     @staticmethod
     @cuda.jit(fastmath=True)
-    def moments_kernel(f, rho, u, c, q, nx, ny, nz):
+    def moments_kernel(f, rho, u, c, q, nx, ny, nz_local):
         i, j, k = cuda.grid(3)
-
-        if i >= nx or j >= ny or k >= nz:
+        if i >= nx or j >= ny or k < 1 or k > nz_local:
             return
 
         s = 0.0
@@ -71,56 +69,37 @@ class Lattice:
             u[i, j, k, 0] = ux * inv
             u[i, j, k, 1] = uy * inv
             u[i, j, k, 2] = uz * inv
-        else:
-            u[i, j, k, 0] = 0.0
-            u[i, j, k, 1] = 0.0
-            u[i, j, k, 2] = 0.0
 
     @staticmethod
     @cuda.jit(fastmath=True)
-    def collision_stream_kernel(
-        f_in, f_out, rho, u, c, w,
-        q, omega, inv_cs2, inv_cs4,
-        nx, ny, nz
-    ):
+    def collide_stream_kernel(f, f_new, rho, u, c, w, q,
+                              omega, inv_cs2, inv_cs4,
+                              nx, ny, nz_local):
         i, j, k = cuda.grid(3)
-
-        if i >= nx or j >= ny or k >= nz:
+        if i >= nx or j >= ny or k < 1 or k > nz_local:
             return
 
         ux = u[i, j, k, 0]
         uy = u[i, j, k, 1]
         uz = u[i, j, k, 2]
-        rho_ijk = rho[i, j, k]
-
+        rho_ = rho[i, j, k]
         uu = ux*ux + uy*uy + uz*uz
-        common = -0.5 * inv_cs2 * uu
 
         for iq in range(q):
-            cx = c[iq, 0]
-            cy = c[iq, 1]
-            cz = c[iq, 2]
-            wi = w[iq]
-
-            uc = ux*cx + uy*cy + uz*cz
-            feq = wi * rho_ijk * (
-                1.0
-                + inv_cs2 * uc
-                + 0.5 * inv_cs4 * uc * uc
-                + common
+            ci0, ci1, ci2 = c[iq]
+            uc = ux*ci0 + uy*ci1 + uz*ci2
+            feq = w[iq] * rho_ * (
+                1.0 + inv_cs2*uc + 0.5*inv_cs4*uc*uc - 0.5*inv_cs2*uu
             )
+            f_post = f[i, j, k, iq] - omega * (f[i, j, k, iq] - feq)
 
-            f_post = f_in[i, j, k, iq] - omega * (f_in[i, j, k, iq] - feq)
+            it = i + ci0
+            jt = j + ci1
+            kt = k + ci2
 
-            ii = i + cx
-            jj = j + cy
-            kk = k + cz
+            if it < 0: it += nx
+            if it >= nx: it -= nx
+            if jt < 0: jt += ny
+            if jt >= ny: jt -= ny
 
-            if ii < 0: ii += nx
-            if ii >= nx: ii -= nx
-            if jj < 0: jj += ny
-            if jj >= ny: jj -= ny
-            if kk < 0: kk += nz
-            if kk >= nz: kk -= nz
-
-            f_out[ii, jj, kk, iq] = f_post
+            f_new[it, jt, kt, iq] = f_post

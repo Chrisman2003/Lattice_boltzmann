@@ -4,13 +4,16 @@
 #SBATCH --partition=vera
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=A40:1
+#SBATCH --gpus-per-node=A100:1
 #SBATCH --time=04:00:00
-#SBATCH --output=lbm_mpi_gpu_%j.out
+#SBATCH --output=output/lbm_mpi_%j.out
 
 module purge
-module load CUDA/12.9.1 
-module load OpenMPI/4.1.6
+module load gompi/2023a
+module load CUDA/12.9.1
+module load mpi4py/3.1.4-gompi-2023a
 source venv/bin/activate
 
-srun python3 samples/taylor_green_vortex.py
+# Run MPI with GPU-aware CuPy
+srun --mpi=pmix python3 samples/taylor_green_vortex.py
+

@@ -1,85 +1,66 @@
-from mpi4py import MPI
+import sys
+sys.path.append("/cephyr/users/jingyang/Vera/workspace/Lattice_boltzmann")
+import time
 import numpy as np
-from numba import cuda
+import cupy as cp
 from lbm.stencil import Stencil
-from lbm.lattice import LatticeMPI
-from lbm.constants import cs, inv_cs2, inv_cs4
+from lbm.lattice import Lattice
+from lbm.constants import cs
+from lbm.exporter import Exporter
 
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-cuda.select_device(rank % len(cuda.gpus))  # ensures one GPU per rank
+def main():
+    d, q = 3, 19
+    n = 128
+    Ma, Re = 0.1, 1600
+    L = n / (2 * np.pi)
+    rho0 = 1.0
+    p0 = rho0 * cs**2
+    v0 = Ma * cs
+    nu = L * v0 / Re
+    tau = nu / cs**2 + 0.5
+    omega = 1.0 / tau
+    t_c = L / v0
+    mod_it = int(t_c / 2)
+    max_it = 2 * 20 * mod_it
 
-# Parameters
-d = 3
-q = 19
-n = 128
-Ma = 0.1
-Re = 1600
+    print(f"Mach = {Ma}, Re = {Re}, tau = {tau}, omega = {omega}, t_c = {t_c}")
+    sys.stdout.flush()
 
-L = n / (2 * np.pi)
-v0 = Ma * cs
-nu = L * v0 / Re
-tau = nu / cs**2 + 0.5
-omega = 1.0 / tau
+    stencil = Stencil(d, q)
+    lattice = Lattice((n, n, n), stencil)
 
-if rank == 0:
-    print(f"MPI ranks = {comm.Get_size()}")
-    print(f"omega = {omega}")
+    # Initial velocity and density
+    x, y, z = np.meshgrid(range(n), range(n), range(n), indexing="ij")
+    x = x / L + np.pi / 2
+    y = y / L + np.pi / 2
+    z = z / L + np.pi / 2
 
-stencil = Stencil(d, q)
-lattice = LatticeMPI((n, n, n), stencil, comm)
+    lattice.u[:, :, :, 0] = cp.asarray(+v0 * np.sin(x) * np.cos(y) * np.sin(z))
+    lattice.u[:, :, :, 1] = cp.asarray(-v0 * np.cos(x) * np.sin(y) * np.sin(z))
+    lattice.u[:, :, :, 2] = 0
+    lattice.rho[:] = cp.asarray(p0 / cs**2)
+    lattice.init_data()
 
-# Initial condition (Taylor–Green vortex)
-x, y, z = np.meshgrid(
-    np.arange(lattice.nx),
-    np.arange(lattice.ny),
-    np.arange(lattice.nz_local + 2),
-    indexing="ij"
-)
+    exporter = Exporter((n, n, n))
+    t0 = time.perf_counter()
+    first_hit_time = None
 
-z_global = z + lattice.rank * lattice.nz_local - 1
+    for it in range(max_it):
+        lattice.collision(omega)
+        lattice.streaming()
+        lattice.exchange_halos_z()  # example MPI halo exchange
 
-x = x / L + np.pi / 2
-y = y / L + np.pi / 2
-z = z_global / L + np.pi / 2
+        if first_hit_time is None:
+            first_hit_time = time.perf_counter() - t0
+            est_total = first_hit_time * (max_it // mod_it)
+            print(f"Estimated total runtime: {est_total:.2f} seconds")
 
-u0 = v0 * np.sin(x) * np.cos(y) * np.sin(z)
-v1 = -v0 * np.cos(x) * np.sin(y) * np.sin(z)
+        if np.mod(it + 1, mod_it) == 0:
+            filename = f"output/tgv-{it + 1}.vtk"
+            exporter.write_vtk(filename, {"density": lattice.rho, "velocity": lattice.u})
+            print(f"Time: {time.perf_counter() - t0}")
 
-lattice.u[:, :, :, 0] = nu0
-lattice.u[:, :, :, 1] = v1
-lattice.u[:, :, :, 2] = 0.0
-lattice.rho[:] = 1.0
+    print(f"Total simulation time: {time.perf_counter() - t0}")
 
-threads = (8, 8, 4)
-blocks = (
-    (lattice.nx + threads[0] - 1) // threads[0],
-    (lattice.ny + threads[1] - 1) // threads[1],
-    (lattice.nz_local + 2 + threads[2] - 1) // threads[2],
-)
-
-max_it = 200
-for it in range(max_it):
-    lattice.moments_kernel[blocks, threads](
-        lattice.f, lattice.rho, lattice.u,
-        lattice.c, lattice.q,
-        lattice.nx, lattice.ny, lattice.nz_local
-    )
-
-    lattice.exchange_halos()
-
-    lattice.collide_stream_kernel[blocks, threads](
-        lattice.f, lattice.f_new,
-        lattice.rho, lattice.u,
-        lattice.c, lattice.w, lattice.q,
-        omega, inv_cs2, inv_cs4,
-        lattice.nx, lattice.ny, lattice.nz_local
-    )
-
-    lattice.f, lattice.f_new = lattice.f_new, lattice.f
-
-    if it % 50 == 0:
-        local_mass = lattice.rho.copy_to_host().sum()
-        total_mass = comm.allreduce(local_mass, op=MPI.SUM)
-        if rank == 0:
-            print(f"it={it}, total_mass={total_mass}")
+if __name__ == "__main__":
+    main()

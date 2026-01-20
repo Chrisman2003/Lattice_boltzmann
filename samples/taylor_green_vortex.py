@@ -7,6 +7,7 @@ from lbm.constants import cs, inv_cs2, inv_cs4
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
+cuda.select_device(rank % len(cuda.gpus))  # ensures one GPU per rank
 
 # Parameters
 d = 3

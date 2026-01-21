@@ -59,8 +59,10 @@ class Lattice:
     def exchange_halos_z(self):
         """Exchange distribution-function halos in z (GPU-aware MPI)."""
         # Define neighbors
-        prev_rank = self.rank - 1
-        next_rank = self.rank + 1
+        #prev_rank = self.rank - 1
+        #next_rank = self.rank + 1
+        prev_rank = (self.rank - 1) % self.size
+        next_rank = (self.rank + 1) % self.size
 
         # -----------------------------------------------------------
         # STEP 1: Exchange with DOWN neighbor (Rank - 1)

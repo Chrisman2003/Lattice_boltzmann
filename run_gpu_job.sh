@@ -4,8 +4,8 @@
 #SBATCH --partition=vera
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
-#SBATCH --gpus-per-node=H100:1
-#SBATCH --time=00:02:00
+#SBATCH --gpus-per-node=A40:1
+#SBATCH --time=00:15:00
 #SBATCH --output=output/lbm_mpi_%j.out
 
 module purge

@@ -28,7 +28,9 @@ def main():
     tau = nu / cs**2 + 0.5
     omega = 1.0 / tau
 
-    rank = MPI.COMM_WORLD.rank
+    comm = MPI.COMM_WORLD       # <--- define comm
+    rank = comm.rank            # <--- define rank
+    size = comm.size            # <--- define size
 
     if rank == 0:
         print(f"Mach        = {Ma}")
@@ -76,6 +78,7 @@ def main():
         print(f"max it {max_it} \t mod it {mod_it}")
         print(max_it / mod_it)
 
+    exporter = Exporter((n, n, n))
     t0 = time.perf_counter()
     first_hit_time = None
 
@@ -90,8 +93,39 @@ def main():
                 est = first_hit_time * (max_it // mod_it)
                 print(f"Estimated total runtime: {est:.2f} seconds")
 
-        if (it + 1) % mod_it == 0 and rank == 0:
-            print(f"Time: {time.perf_counter() - t0}")
+
+        #if (it + 1) % mod_it == 0 and rank == 0:
+        #    print(f"Time: {time.perf_counter() - t0}")
+        
+        # Write VTK every mod_it steps
+        if (it + 1) % mod_it == 0:
+            # Gather full domain to rank 0
+            local_rho = lattice.rho[:, :, 1:-1]
+            local_u = lattice.u[:, :, 1:-1, :]
+            # Move to CPU for MPI
+            local_rho_cpu = cp.asnumpy(local_rho)
+            local_u_cpu = cp.asnumpy(local_u)
+            # Prepare full arrays on rank 0
+            rho_full = None
+            u_full = None
+            if rank == 0:
+                rho_full = np.zeros((n, n, n), dtype=np.float32)
+                u_full = np.zeros((n, n, n, 3), dtype=np.float32)
+            counts = np.full(size, nz_local * n * n, dtype=int)
+            displs = np.array([i * nz_local * n * n for i in range(size)], dtype=int)
+            # Gather rho
+            comm.Gatherv(sendbuf=local_rho_cpu.flatten(),
+                         recvbuf=(rho_full.flatten() if rank == 0 else None, counts, displs, MPI.FLOAT),
+                         root=0)
+            # Gather u
+            comm.Gatherv(sendbuf=local_u_cpu.flatten(),
+                         recvbuf=(u_full.flatten() if rank == 0 else None, counts * 3, displs * 3, MPI.FLOAT),
+                         root=0)
+            if rank == 0:
+                filename = f"tgv-{it + 1}.vtk"
+                exporter.write_vtk(filename, {"density": rho_full, "velocity": u_full})
+                print(f"Time: {time.perf_counter() - t0}")
+
 
     if rank == 0:
         print(f"Time: {time.perf_counter() - t0}")

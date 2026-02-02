@@ -3,6 +3,9 @@ A research-oriented Python implementation of the Lattice Boltzmann Method (LBM) 
 Supports isentropic vortex 2D CPU (NumPy) implementation, as a means to test the LBM algorithm on a simpler test case.
 For complex performance analysis, GPU parallelized versions are written using CuPy and Numba-CUDA back-ends of the taylor green vortex 3D test case (CPU). 
 
+# Results
+![Million Lattice Updates / second](results/MLUPs.png)
+![Speedup](results/Speedup.png)
 
 ## Requirements
 
@@ -33,7 +36,3 @@ There will probably have to be two variables containing the PDF (PDF_A and PDF_B
 # Theory
 Recommended reading:
 - The Lattice Boltzmann Method - Principles and Practice, Timm Kruger.
-
-# Results
-![Million Lattice Updates / second](results/MLUPs.png)
-![Speedup](results/Speedup.png)
